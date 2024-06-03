@@ -1,5 +1,11 @@
+#include "bigint.hpp"
+
 #include <iostream>
 
 int main() {
-    std::cout << "hi\n";
+    std::string a;
+    std::string b;
+
+    std::cin >> a >> b;
+    std::cout << Bigint(a) + Bigint(b) << '\n';
 }
