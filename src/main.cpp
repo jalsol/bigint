@@ -1,13 +1,19 @@
-#include "bigint.hpp"
+#include "parser.hpp"
 
 #include <iostream>
+#include <string>
 
 int main() {
-    std::string a;
-    std::string b;
+    std::string expression;
 
-    std::cin >> a >> b;
-    std::cout << Bigint(a) + Bigint(b) << '\n';
-    std::cout << Bigint(a) - Bigint(b) << '\n';
-    std::cout << Bigint(a) * Bigint(b) << '\n';
+    while (true) {
+        std::cout << ">>> ";
+        std::getline(std::cin, expression);
+
+        try {
+            std::cout << evaluate(expression) << std::endl;
+        } catch (std::exception& e) {
+            std::cout << e.what() << std::endl;
+        }
+    }
 }
