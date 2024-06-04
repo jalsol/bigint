@@ -8,9 +8,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
 
 include_directories(src)
+include_directories(examples)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
+)
+
+add_executable(bigint_test
+    examples/main.cpp
 )
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror -Wfatal-errors)
