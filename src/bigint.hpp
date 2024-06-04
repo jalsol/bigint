@@ -10,14 +10,19 @@
 
 class Bigint {
 public:
+    using DataType = int8_t;
+    using Buffer = std::basic_string<DataType>;
+
     constexpr Bigint() = default;
     constexpr Bigint(std::string_view view);
 
     constexpr Bigint& operator+=(const Bigint& other);
     constexpr Bigint& operator-=(const Bigint& other);
+    constexpr Bigint& operator*=(const Bigint& other);
 
     friend constexpr Bigint operator+(Bigint lhs, const Bigint& rhs);
     friend constexpr Bigint operator-(Bigint lhs, const Bigint& rhs);
+    friend constexpr Bigint operator*(Bigint lhs, const Bigint& rhs);
 
     friend std::ostream& operator<<(std::ostream& os, const Bigint& bigint);
 
@@ -28,7 +33,7 @@ private:
 
     constexpr void trim_leading_zeroes();
 
-    std::basic_string<int8_t> m_buf;
+    Buffer m_buf;
     bool m_neg = false;
 };
 
@@ -161,12 +166,47 @@ constexpr Bigint& Bigint::operator-=(const Bigint& other) {
     return *this;
 }
 
+constexpr Bigint& Bigint::operator*=(const Bigint& other) {
+    // TODO: May use FFT and/or Karatsuba for faster multiplication
+
+    m_neg ^= other.m_neg;
+
+    Buffer result(m_buf.size() + other.m_buf.size(), 0);
+
+    for (std::size_t i = 0; i < m_buf.size(); ++i) {
+        if (m_buf[i] == 0) {
+            continue;
+        }
+
+        DataType carry = 0;
+        for (std::size_t j = 0; j < other.m_buf.size() || carry != 0; ++j) {
+            const auto other_val = (j < other.m_buf.size())
+                                 ? other.m_buf[j]
+                                 : 0;
+
+            const auto prod = result[i + j]
+                            + m_buf[i] * other_val
+                            + carry;
+            carry = prod / 10;
+            result[i + j] = prod % 10;
+        }
+    }
+
+    m_buf = result;
+    trim_leading_zeroes();
+    return *this;
+}
+
 constexpr Bigint operator+(Bigint lhs, const Bigint& rhs) {
     return lhs += rhs;
 }
 
 constexpr Bigint operator-(Bigint lhs, const Bigint& rhs) {
     return lhs -= rhs;
+}
+
+constexpr Bigint operator*(Bigint lhs, const Bigint& rhs) {
+    return lhs *= rhs;
 }
 
 std::ostream& operator<<(std::ostream& os, const Bigint& bigint) {
