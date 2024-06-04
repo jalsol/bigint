@@ -19,4 +19,5 @@ add_executable(bigint_test
 )
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror -Wfatal-errors)
+target_compile_options(bigint_test PRIVATE -Wall -Wextra -pedantic -Werror -Wfatal-errors)
 
