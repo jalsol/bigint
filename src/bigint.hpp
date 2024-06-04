@@ -4,18 +4,13 @@
 #include <iostream>
 #include <string_view>
 #include <cctype>
-#include <iomanip>
 #include <ranges>
 #include <stdexcept>
 #include <utility>
 
 class Bigint {
 public:
-    static constexpr int BASE = 100;
-    static constexpr int BASE_DIGITS = 2;
-
     constexpr Bigint() = default;
-    constexpr Bigint(int16_t number);
     constexpr Bigint(std::string_view view);
 
     constexpr Bigint& operator+=(const Bigint& other);
@@ -33,17 +28,9 @@ private:
 
     constexpr void trim_leading_zeroes();
 
-    std::basic_string<int16_t> m_buf;
+    std::basic_string<int8_t> m_buf;
     bool m_neg = false;
 };
-
-constexpr Bigint::Bigint(int16_t number) {
-    if (number < 0) {
-        m_neg = true;
-        number *= -1;
-    }
-    m_buf.push_back(number);
-}
 
 constexpr Bigint::Bigint(std::string_view view) {
     if (view.empty()) {
@@ -58,29 +45,12 @@ constexpr Bigint::Bigint(std::string_view view) {
         }
     }
 
-    auto convert_range_to_num = [&](std::size_t head, std::size_t tail) {
-        int16_t num = 0;
-        for (auto i = head; i < tail; ++i) {
-            if (!std::isdigit(view[i])) {
-                throw std::runtime_error("Bigint(std::string_view): Input can't contain non-digit characters besides the sign");
-            }
-            num = 10 * num + (view[i] - '0');
-        }
-        return num;
-    };
-
-    // reserve int(ceil(view.size() / BASE_DIGITS))
-    m_buf.reserve((view.size() + BASE_DIGITS - 1) / BASE_DIGITS);
-
-    auto tail = view.size();
-    for (; tail >= BASE_DIGITS; tail -= BASE_DIGITS) {
-        const auto head = tail - BASE_DIGITS;
-        m_buf.push_back(convert_range_to_num(head, tail));
+    m_buf.resize(view.size());
+    for (std::size_t i = 0; i < m_buf.size(); ++i) {
+        m_buf[i] = view[view.size() - i - 1] - '0';
     }
 
-    if (tail != 0) {
-        m_buf.push_back(convert_range_to_num(0, tail));
-    }
+    trim_leading_zeroes();
 }
 
 constexpr void Bigint::add_unsigned(const Bigint& other) {
@@ -95,10 +65,10 @@ constexpr void Bigint::add_unsigned(const Bigint& other) {
                              : 0;
 
         m_buf[i] += other_val + carry;
-        carry = (m_buf[i] >= BASE);
+        carry = (m_buf[i] >= 10);
 
         if (carry) {
-            m_buf[i] -= BASE;
+            m_buf[i] -= 10;
         }
     };
 
@@ -127,7 +97,7 @@ constexpr void Bigint::sub_unsigned(const Bigint& other) {
         carry = (m_buf[i] < 0);
 
         if (carry) {
-            m_buf[i] += BASE;
+            m_buf[i] += 10;
         }
     };
 
@@ -209,11 +179,8 @@ std::ostream& operator<<(std::ostream& os, const Bigint& bigint) {
         os << '-';
     }
 
-    os << int(bigint.m_buf.back());
-
-    auto remaining = std::views::reverse(bigint.m_buf) | std::views::drop(1);
-    for (auto elem : remaining) {
-        os << std::setw(Bigint::BASE_DIGITS) << std::setfill('0') << int(elem);
+    for (auto elem : std::views::reverse(bigint.m_buf)) {
+        os << int(elem);
     }
 
     return os;
