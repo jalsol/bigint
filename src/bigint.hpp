@@ -18,6 +18,8 @@ public:
     constexpr Bigint& operator-=(const Bigint& other);
     constexpr Bigint& operator*=(const Bigint& other);
 
+    constexpr Bigint operator-() const;
+
     friend constexpr Bigint operator+(Bigint lhs, const Bigint& rhs);
     friend constexpr Bigint operator-(Bigint lhs, const Bigint& rhs);
     friend constexpr Bigint operator*(Bigint lhs, const Bigint& rhs);
@@ -193,6 +195,12 @@ constexpr Bigint& Bigint::operator*=(const Bigint& other) {
     m_buf = result;
     trim_leading_zeroes();
     return *this;
+}
+
+constexpr Bigint Bigint::operator-() const {
+    Bigint result = *this;
+    result.m_neg ^= 1;
+    return result;
 }
 
 constexpr Bigint operator+(Bigint lhs, const Bigint& rhs) {
