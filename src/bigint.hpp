@@ -1,12 +1,10 @@
 #pragma once
 
 #include <cstdint>
-#include <iostream>
+#include <ostream>
 #include <string_view>
-#include <cctype>
 #include <ranges>
 #include <stdexcept>
-#include <utility>
 
 class Bigint {
 public:
@@ -143,8 +141,8 @@ constexpr Bigint& Bigint::operator+=(const Bigint& other) {
     } else if (cmp_unsigned(*this, other) >= 0) {
         sub_unsigned(other);
     } else {
-        auto tmp = other;
-        std::swap(*this, tmp);
+        auto tmp = std::move(*this);
+        *this = other;
         sub_unsigned(tmp);
     }
 
