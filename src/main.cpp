@@ -8,4 +8,5 @@ int main() {
 
     std::cin >> a >> b;
     std::cout << Bigint(a) + Bigint(b) << '\n';
+    std::cout << Bigint(a) - Bigint(b) << '\n';
 }

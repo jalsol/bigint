@@ -19,7 +19,10 @@ public:
     constexpr Bigint(std::string_view view);
 
     constexpr Bigint& operator+=(const Bigint& other);
+    constexpr Bigint& operator-=(const Bigint& other);
+
     friend constexpr Bigint operator+(Bigint lhs, const Bigint& rhs);
+    friend constexpr Bigint operator-(Bigint lhs, const Bigint& rhs);
 
     friend std::ostream& operator<<(std::ostream& os, const Bigint& bigint);
 
@@ -173,8 +176,27 @@ constexpr Bigint& Bigint::operator+=(const Bigint& other) {
     return *this;
 }
 
+constexpr Bigint& Bigint::operator-=(const Bigint& other) {
+    if (m_neg != other.m_neg) {
+        add_unsigned(other);
+    } else if (cmp_unsigned(*this, other) >= 0) {
+        sub_unsigned(other);
+    } else {
+        auto tmp = other;
+        std::swap(*this, tmp);
+        sub_unsigned(tmp);
+        m_neg ^= 1;
+    }
+
+    return *this;
+}
+
 constexpr Bigint operator+(Bigint lhs, const Bigint& rhs) {
     return lhs += rhs;
+}
+
+constexpr Bigint operator-(Bigint lhs, const Bigint& rhs) {
+    return lhs -= rhs;
 }
 
 std::ostream& operator<<(std::ostream& os, const Bigint& bigint) {
